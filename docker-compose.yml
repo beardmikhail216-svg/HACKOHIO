@@ -1,0 +1,12 @@
+services: #container structure
+  mongo: #container for MongoDB
+    image: mongo:8 #mongoDB 8 image
+    container_name: projecthub-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017" #standard MongoDB port
+    volumes:
+      - mongo-data:/data/db #data survives if container is removed/stopped
+
+volumes:
+  mongo-data:
