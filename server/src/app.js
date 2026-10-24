@@ -11,7 +11,10 @@ const recommendationRoutes = require("./routes/recommendations");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}));
 
 app.use(session({
     //private session cookie(keeps logged in, shopping carts, progress in forms, etc)
@@ -23,7 +26,9 @@ app.use(session({
     //keep sessions in MongoDB
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI,
-        secret: process.env.SESSION_SECRET
+        crypto: {
+            secret: process.env.SESSION_SECRET
+        }
     }),
     cookie: {
         //session cookie inaccessible on client side

@@ -73,6 +73,15 @@ const login = async (req, res) => {
             });
         }
 
+        res.session.regenerate((err) => {
+            if (err) {
+                console.error("Error regenerating session:", err);
+                return res.status(500).json({
+                    message: "Internal server error"
+                });
+            }
+        });
+
         req.session.userId = user._id;
 
         res.status(200).json({
