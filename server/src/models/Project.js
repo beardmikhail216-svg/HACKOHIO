@@ -66,6 +66,7 @@ const projectSchema = new mongoose.Schema({
     },
     registrationMode: {
         type: String,
+        enum: ["approval", "open"],
         default: "approval"
     }
 },

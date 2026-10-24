@@ -42,6 +42,12 @@ async function createRegistration(req, res) {
 
         return res.status(201).json({ registration });
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "User is already registered for this project"
+            });
+        }
+        
         console.error("Error creating registration:", error);
 
         res.status(500).json({
@@ -66,11 +72,11 @@ async function createRegistration(req, res) {
             const { projectId } = req.params;
             const registrations = await Registration.find({ 
                 projectReference: projectId }).populate("userReference", "userName languages frameworks interests");
-            if (registrations.length === 0) {
-                return res.status(404).json({
-                    message: "Registration not found"
-                });
-            }
+            // if (registrations.length === 0) {
+            //     return res.status(404).json({
+            //         message: "Registration not found"
+            //     });
+            // }
             res.status(200).json(registrations);
         } catch (error) {
             console.error("Error fetching registrations:", error);
