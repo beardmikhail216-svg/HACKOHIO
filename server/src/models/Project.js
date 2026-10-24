@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 
 const projectSchema = new mongoose.Schema({
     title: { type: String, required: true },
-    description: { type: String, required: true },
-    languages: { type: String, enum: [
+    description: { type: [String], required: true },
+    languages: { type: [String], enum: [
         "Python", 
         "JavaScript", 
         "Java", 
@@ -15,9 +15,8 @@ const projectSchema = new mongoose.Schema({
         "Go", 
         "Rust", 
         "Kotlin", 
-        "Swift", 
-        "none"], default: "none" },
-        frameworks: { type: String, enum: [
+        "Swift",], default: [] },
+    frameworks: { type: [String], enum: [
             "React", 
             "Angular", 
             "Vue", 
@@ -35,15 +34,30 @@ const projectSchema = new mongoose.Schema({
             "Next.js", 
             "Nuxt", 
             "SvelteKit",
-            "TensorFlow", 
-            "none"], default: "none" },
-            databases: { type: String, enum: [
+            "TensorFlow",], default: [] },
+    databases: { type: [String], enum: [
                 "MySQL",
                 "PostgreSQL",
                 "MongoDB",
                 "SQLite",
-                "Redis",
-                "none"], default: "none" },
+                "Redis",], default: [] },
+    topics: { type: [String], enum: [
+        "Web Development",
+        "Mobile Development",
+        "Data Science",
+        "Machine Learning",
+        "Artificial Intelligence",
+        "Game Development",
+        "DevOps",
+        "Cybersecurity",
+        "Blockchain",
+        "Cloud Computing",
+        "IoT",
+        "AR/VR",
+        "Robotics",
+        "Embedded Systems",
+        "Quantum Computing",
+    ], default: [] },
     date: { type: Date, required: true },
     developer: { 
         type: mongoose.Schema.Types.ObjectId, 

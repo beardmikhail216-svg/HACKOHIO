@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true},
     email: { type: String, required: true, unique: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    languages: { type: String, enum: [
+    languages: { type: [String], enum: [
         "Python", 
         "JavaScript", 
         "Java", 
@@ -17,9 +17,8 @@ const userSchema = new mongoose.Schema({
         "Go", 
         "Rust", 
         "Kotlin", 
-        "Swift", 
-        "none"], default: "none" },
-        frameworks: { type: String, enum: [
+        "Swift",], default: [] },
+    frameworks: { type: [String], enum: [
             "React", 
             "Angular", 
             "Vue", 
@@ -37,15 +36,30 @@ const userSchema = new mongoose.Schema({
             "Next.js", 
             "Nuxt", 
             "SvelteKit",
-            "TensorFlow", 
-            "none"], default: "none" },
-            databases: { type: String, enum: [
+            "TensorFlow",], default: [] },
+    databases: { type: [String], enum: [
                 "MySQL",
                 "PostgreSQL",
                 "MongoDB",
                 "SQLite",
-                "Redis",
-                "none"], default: "none" }
+                "Redis",], default: [] },
+    interests: { type: [String], enum: [
+            "Web Development",
+            "Mobile Development",
+            "Data Science",
+            "Machine Learning",
+            "Artificial Intelligence",
+            "Game Development",
+            "DevOps",
+            "Cybersecurity",
+            "Blockchain",
+            "Cloud Computing",
+            "IoT",
+            "AR/VR",
+            "Robotics",
+            "Embedded Systems",
+            "Quantum Computing",
+        ], default: [] }
 },
 {
     timestamps: true
