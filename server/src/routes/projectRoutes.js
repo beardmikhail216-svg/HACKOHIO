@@ -1,6 +1,5 @@
 const express = require("express");
 const requireAuth = require("../middleware/authMiddleware");
-// const requireRole = require("../middleware/roleMiddleware");
 
 const {
     getProjects,
