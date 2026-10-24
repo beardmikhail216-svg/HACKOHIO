@@ -2,9 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
 const MongoStore = require("connect-mongo").default;
+
 const authRoutes = require("./routes/auth");
 const projectRoutes = require("./routes/projectRoutes")
 const registrationRoutes = require("./routes/registrationRoutes")
+const recommendationRoutes = require("./routes/recommendations");
+
 
 const app = express();
 
@@ -40,6 +43,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 
 app.use("/api/registrations", registrationRoutes);
+
+app.use("/api/recommendations", recommendationRoutes);
 
 app.get("/api/health", (req, res) => {
     res.json({
