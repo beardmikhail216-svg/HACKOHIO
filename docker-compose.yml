@@ -4,7 +4,7 @@ services: #container structure
     container_name: projecthub-mongo
     restart: unless-stopped
     ports:
-      - "27017:27017" #standard MongoDB port
+      - "27018:27017" #standard MongoDB port
     volumes:
       - mongo-data:/data/db #data survives if container is removed/stopped
 
