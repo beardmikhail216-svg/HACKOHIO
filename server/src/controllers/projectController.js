@@ -65,7 +65,6 @@ async function createProject(req, res) {
 
 async function updateProject(req, res) {
     try {
-        const { title, description, date } = req.body;
         const project = await Project.findById(req.params.id);
 
         if (!project) {
@@ -81,14 +80,15 @@ async function updateProject(req, res) {
             });
         }
 
-        if (title) project.title = title;
-        if (description) project.description = description;
-        if (date) project.date = date;
-        if (req.body.languages) project.languages = req.body.languages;
-        if (req.body.frameworks) project.frameworks = req.body.frameworks;
-        if (req.body.databases) project.databases = req.body.databases;
-        if (req.body.topics) project.topics = req.body.topics;
-
+        if (req.body.title !== undefined) project.title = req.body.title;
+        if (req.body.description !== undefined) project.description = req.body.description;
+        if (req.body.date !== undefined) project.date = req.body.date;
+        if (req.body.languages !== undefined) project.languages = req.body.languages;
+        if (req.body.frameworks !== undefined) project.frameworks = req.body.frameworks;
+        if (req.body.databases !== undefined) project.databases = req.body.databases;
+        if (req.body.topics !== undefined) project.topics = req.body.topics;
+        if (req.body.registrationMode !== undefined) { project.registrationMode = req.body.registrationMode;}
+        
         await project.save();
 
         res.status(200).json({ updatedProject: project });

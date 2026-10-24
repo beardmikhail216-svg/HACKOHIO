@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import AuthPage from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
 import {
   getCurrentUser,
   logout,
@@ -9,32 +10,31 @@ import {
 function App() {
   const [user, setUser] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [logoutError, setLogoutError] = useState("");
 
   useEffect(() => {
     getCurrentUser()
-      .then(({ data }) => {
-        setUser(data.user);
-      })
-      .catch(() => {
-        setUser(null);
-      })
-      .finally(() => {
-        setCheckingSession(false);
-      });
+      .then(({ data }) => setUser(data.user))
+      .catch(() => setUser(null))
+      .finally(() => setCheckingSession(false));
   }, []);
 
   const handleLogout = async () => {
+    setLogoutError("");
+
     try {
       await logout();
       setUser(null);
     } catch (error) {
-      console.error("Logout failed:", error);
+      setLogoutError(
+        error.response?.data?.message || "Logout failed."
+      );
     }
   };
 
   if (checkingSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+      <div className="p-8 text-center">
         Checking your session...
       </div>
     );
@@ -45,28 +45,24 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 p-8 text-white">
-      <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">ProjectHub</h1>
+    <div>
+      <div className="flex items-center justify-end gap-4 border-b p-4">
+        {logoutError && (
+          <p role="alert" className="text-sm text-red-600">
+            {logoutError}
+          </p>
+        )}
 
         <button
           onClick={handleLogout}
-          className="rounded-lg bg-red-600 px-4 py-2 hover:bg-red-500"
+          className="rounded-lg border px-4 py-2"
         >
           Log out
         </button>
-      </header>
+      </div>
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-semibold">
-          Welcome, {user.userName}!
-        </h2>
-
-        <p className="mt-2 text-slate-400">
-          Your ProjectHub dashboard will go here.
-        </p>
-      </section>
-    </main>
+      <DashboardPage user={user} />
+    </div>
   );
 }
 
