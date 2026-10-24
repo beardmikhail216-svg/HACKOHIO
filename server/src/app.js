@@ -35,6 +35,7 @@ app.use(session({
         httpOnly: true,
         //https in prod, http allowed during dev
         secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
         //session cookie lasts 24 hrs
         maxAge: 1000 * 60 * 60 * 24
     }

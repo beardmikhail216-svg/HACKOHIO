@@ -65,6 +65,7 @@ const register = async (req, res) => {
     }
 };
 
+
 const login = async (req, res) => {
     try {
         const { password } = req.body;
@@ -84,7 +85,10 @@ const login = async (req, res) => {
             });
         }
 
-        const passwordMatches = await bcrypt.compare(password, user.password);
+        const passwordMatches = await bcrypt.compare(
+            password,
+            user.password
+        );
 
         if (!passwordMatches) {
             return res.status(401).json({
@@ -92,39 +96,42 @@ const login = async (req, res) => {
             });
         }
 
+        // Wait for the old session to be regenerated.
         req.session.regenerate((err) => {
             if (err) {
                 console.error("Error regenerating session:", err);
                 return res.status(500).json({
-                    message: "Internal server error"
+                    message: "Could not create a session"
                 });
             }
-        });
 
-        req.session.userId = user._id.toString();
+            // Set the ID on the new session.
+            req.session.userId = user._id.toString();
 
-        req.session.save((err) => {
-        if (err) {
-            console.error("Error saving session:", err);
-            return res.status(500).json({
-                message: "Internal server error"
+            // Wait until the session is stored before responding.
+            req.session.save((saveError) => {
+                if (saveError) {
+                    console.error("Error saving session:", saveError);
+                    return res.status(500).json({
+                        message: "Could not save session"
+                    });
+                }
+
+                return res.status(200).json({
+                    message: "Login successful",
+                    user: {
+                        id: user._id,
+                        userName: user.userName,
+                        email: user.email,
+                        role: user.role
+                    }
+                });
             });
-        }
-
-        return res.status(200).json({
-            message: "Login successful",
-            user: {
-                id: user._id,
-                userName: user.userName,
-                email: user.email,
-                role: user.role
-            }
         });
-    });
     } catch (error) {
         console.error("Error logging in user:", error);
 
-        res.status(500).json({
+        return res.status(500).json({
             message: "Internal server error"
         });
     }

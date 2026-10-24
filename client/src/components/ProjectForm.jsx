@@ -1,31 +1,39 @@
 
 import { useEffect, useState } from "react";
+import MultiSelect from "./Dropdown";
+import { projectOptions } from "../constants/projectOptions";
 
 const today = new Date().toISOString().slice(0, 10);
 
 const emptyForm = {
   title: "",
   description: "",
-  languages: "",
-  frameworks: "",
-  databases: "",
-  topics: "",
+  languages: [],
+  frameworks: [],
+  databases: [],
+  topics: [],
   date: today,
   registrationMode: "approval",
 };
 
 function toFormValues(project) {
-  if (!project) return { ...emptyForm };
+  if (!project) {
+    return {
+      ...emptyForm,
+      languages: [],
+      frameworks: [],
+      databases: [],
+      topics: [],
+    };
+  }
 
   return {
     title: project.title ?? "",
-    description: Array.isArray(project.description)
-      ? project.description.join("\n")
-      : project.description ?? "",
-    languages: (project.languages ?? []).join(", "),
-    frameworks: (project.frameworks ?? []).join(", "),
-    databases: (project.databases ?? []).join(", "),
-    topics: (project.topics ?? []).join(", "),
+    description: project.description ?? "",
+    languages: project.languages ?? [],
+    frameworks: project.frameworks ?? [],
+    databases: project.databases ?? [],
+    topics: project.topics ?? [],
     date: project.date
       ? new Date(project.date).toISOString().slice(0, 10)
       : today,
@@ -45,36 +53,36 @@ function ProjectForm({ project, onSubmit, onCancel }) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setForm((previous) => ({ ...previous, [name]: value }));
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    setSaving(true);
-
-    const splitList = (value) =>
-      value
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
 
     const projectData = {
       title: form.title.trim(),
       description: form.description.trim(),
-      languages: splitList(form.languages),
-      frameworks: splitList(form.frameworks),
-      databases: splitList(form.databases),
-      topics: splitList(form.topics),
+      languages: form.languages,
+      frameworks: form.frameworks,
+      databases: form.databases,
+      topics: form.topics,
       date: form.date,
       registrationMode: form.registrationMode,
     };
+
+    setSaving(true);
 
     try {
       await onSubmit(projectData);
     } catch (err) {
       setError(
-        err.response?.data?.message || "Could not save the project."
+        err.response?.data?.message ||
+          "Could not save the project."
       );
     } finally {
       setSaving(false);
@@ -83,6 +91,13 @@ function ProjectForm({ project, onSubmit, onCancel }) {
 
   const inputClass =
     "w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900";
+
+  const multiSelectFields = [
+    ["languages", "Languages", projectOptions.languages],
+    ["frameworks", "Frameworks", projectOptions.frameworks],
+    ["databases", "Databases", projectOptions.databases],
+    ["topics", "Topics / interests", projectOptions.topics],
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,7 +127,10 @@ function ProjectForm({ project, onSubmit, onCancel }) {
       </div>
 
       <div>
-        <label htmlFor="description" className="mb-1 block font-medium">
+        <label
+          htmlFor="description"
+          className="mb-1 block font-medium"
+        >
           Description
         </label>
         <textarea
@@ -126,27 +144,23 @@ function ProjectForm({ project, onSubmit, onCancel }) {
         />
       </div>
 
-      {[
-        ["languages", "Languages", "JavaScript, Python"],
-        ["frameworks", "Frameworks", "React, Express"],
-        ["databases", "Databases", "MongoDB, PostgreSQL"],
-        ["topics", "Topics / interests", "AI, web development"],
-      ].map(([name, label, placeholder]) => (
+      {multiSelectFields.map(([name, label, options]) => (
         <div key={name}>
-          <label htmlFor={name} className="mb-1 block font-medium">
+          <label className="mb-1 block font-medium">
             {label}
           </label>
-          <input
-            id={name}
-            name={name}
+
+          <MultiSelect
+            label={label}
+            options={options}
             value={form[name]}
-            onChange={handleChange}
-            placeholder={placeholder}
-            className={inputClass}
+            onChange={(selected) =>
+              setForm((previous) => ({
+                ...previous,
+                [name]: selected,
+              }))
+            }
           />
-          <p className="mt-1 text-xs text-gray-500">
-            Separate multiple values with commas.
-          </p>
         </div>
       ))}
 
@@ -172,6 +186,7 @@ function ProjectForm({ project, onSubmit, onCancel }) {
         >
           Registration mode
         </label>
+
         <select
           id="registrationMode"
           name="registrationMode"
