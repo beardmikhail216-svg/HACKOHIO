@@ -1,4 +1,3 @@
-
 const {
     calculateMatch,
     rankProjects
@@ -9,30 +8,30 @@ const user = {
     languages: ["Python", "JavaScript"],
     frameworks: ["React"],
     databases: ["MongoDB"],
-    interests: ["AI", "Sustainability"]
+    interests: ["Artificial Intelligence", "Web Development"]
 };
 
 const projects = [
     {
-        name: "AI Study Assistant",
+        title: "AI Study Assistant",
         languages: ["Python"],
         frameworks: [],
         databases: [],
-        topics: ["AI"]
+        topics: ["Artificial Intelligence"]
     },
     {
-        name: "Sustainability Tracker",
+        title: "Web Development Tracker",
         languages: ["JavaScript"],
         frameworks: ["React"],
         databases: ["MongoDB"],
-        topics: ["Sustainability"]
+        topics: ["Web Development"]
     },
     {
-        name: "Java Game",
+        title: "Java Game",
         languages: ["Java"],
         frameworks: [],
         databases: [],
-        topics: ["Gaming"]
+        topics: ["Game Development"]
     }
 ];
 

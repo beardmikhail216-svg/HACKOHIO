@@ -1,16 +1,16 @@
-
 const express = require("express");
 const router = express.Router();
 
 const requireAuth = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const Project = require("../models/Project");
+
 const { rankProjects } = require("../services/matchingService");
 
 // GET /api/recommendations
 router.get("/", requireAuth, async (req, res) => {
     try {
-        // Find the currently logged-in user using their session.
+        // Find the currently logged-in user
         const user = await User.findById(req.user.id)
             .select("-password")
             .lean();
@@ -21,15 +21,16 @@ router.get("/", requireAuth, async (req, res) => {
             });
         }
 
-        // Exclude projects created by the current user.
+        // Exclude projects created by the current user
         const projects = await Project.find({
             developer: { $ne: user._id }
         }).lean();
 
-        // Calculate and return ranked recommendations.
+        // Calculate and return ranked recommendations
         const recommendations = rankProjects(user, projects);
 
         return res.status(200).json(recommendations);
+
     } catch (error) {
         console.error("Error generating recommendations:", error);
 
