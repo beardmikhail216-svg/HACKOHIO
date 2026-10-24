@@ -35,14 +35,16 @@ async function getProjectById(req,res) {
 
 async function createProject(req, res) {
     try {
-        const { title, description, date, location, capacity, registrationMode } = req.body;
+        const { title, description, date, registrationMode } = req.body;
         const project = new Project({
             title,
             description,
+            languages: req.body.languages,
+            frameworks: req.body.frameworks,
+            databases: req.body.databases,
+            topics: req.body.topics,
             date,
-            location,
-            capacity,
-            organizer: req.user.id,
+            developer: req.user.id,
             registrationMode
         });
 
@@ -63,7 +65,7 @@ async function createProject(req, res) {
 
 async function updateProject(req, res) {
     try {
-        const { title, description, date, location, capacity } = req.body;
+        const { title, description, date } = req.body;
         const project = await Project.findById(req.params.id);
 
         if (!project) {
@@ -73,17 +75,19 @@ async function updateProject(req, res) {
         }
 
         //objectId to String since req.user.id is a string
-        if (project.organizer.toString() !== req.user.id) {
+        if (project.developer.toString() !== req.user.id) {
             return res.status(403).json({
-                message: "You are not the organizer of this project"
+                message: "You are not the developer of this project"
             });
         }
 
-        project.title = title;
-        project.description = description;
-        project.date = date;
-        project.location = location;
-        project.capacity = capacity;
+        if (title) project.title = title;
+        if (description) project.description = description;
+        if (date) project.date = date;
+        if (req.body.languages) project.languages = req.body.languages;
+        if (req.body.frameworks) project.frameworks = req.body.frameworks;
+        if (req.body.databases) project.databases = req.body.databases;
+        if (req.body.topics) project.topics = req.body.topics;
 
         await project.save();
 
@@ -108,9 +112,9 @@ async function deleteProject(req, res) {
         }
 
         //objectId to String since req.user.id is a string
-        if (project.organizer.toString() !== req.user.id) {
+        if (project.developer.toString() !== req.user.id) {
             return res.status(403).json({
-                message: "You are not the organizer of this project"
+                message: "You are not the developer of this project"
             });
         }
 

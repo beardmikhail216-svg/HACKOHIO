@@ -24,19 +24,13 @@ async function createRegistration(req, res) {
             });
         }
 
-        // count confirmations
-        const confirmedRegistrations = await Registration.countDocuments({
-            projectReference: projectId,
-            registrationStatus: "confirmed"
-        });
-
         // registration status?
         // const registrationStatus = project.registrationMode === "approval" ? "pending" : "confirmed";
         let registrationStatus;
         if (project.registrationMode === "approval") {
             registrationStatus = "pending";
         } else {
-            registrationStatus = "confirmed";
+            registrationStatus = "approved";
         }
 
         // create registration
@@ -55,5 +49,126 @@ async function createRegistration(req, res) {
         });
     }
 }
+    async function getMyRegistrations(req, res) {
+        try {
+            const registrations = await Registration.find({ userReference: req.user.id }).populate("projectReference").sort({ createdAt: -1 }); //asc ord
+            res.status(200).json(registrations);
+        } catch (error) {
+            console.error("Error fetching registrations:", error);
+            
+            res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
+    async function getProjectRegistrations(req, res) {
+        try {
+            const { projectId } = req.params;
+            const registrations = await Registration.find({ 
+                projectReference: projectId }).populate("userReference", "userName languages frameworks interests");
+            if (registrations.length === 0) {
+                return res.status(404).json({
+                    message: "Registration not found"
+                });
+            }
+            res.status(200).json(registrations);
+        } catch (error) {
+            console.error("Error fetching registrations:", error);
+            
+            res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
+    async function deleteRegistration(req, res) {
+        try {
+            const registration = await Registration.findById(req.params.id);
+    
+            if (!registration) {
+                return res.status(404).json({
+                    message: "Registration not found"
+                });
+            }
+    
+            //objectId to String since req.user.id is a string
+            if (registration.userReference.toString() !== req.user.id) {
+                return res.status(403).json({
+                    message: "You are not the owner of this registration"
+                });
+            }
+    
+            await Registration.findByIdAndDelete(req.params.id);
+    
+            res.status(200).json({ deletedRegistration: registration });
+        } catch (error) {
+            console.error("Error deleting registration:", error);
 
-module.exports = { createRegistration };
+            res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
+    async function approveRegistration(req, res) {
+        try {
+            const registration = await Registration.findById(req.params.id).populate("projectReference");
+
+            if (!registration) {
+                return res.status(404).json({
+                    message: "Registration not found"
+                });
+            }
+
+            if (registration.projectReference.developer.toString() !== req.user.id) {
+                return res.status(403).json({
+                    message: "You are not the developer of this project"
+                });
+            }
+
+            registration.registrationStatus = "approved";
+            await registration.save();
+
+            res.status(200).json({ approvedRegistration: registration });
+        } catch (error) {
+            console.error("Error approving registration:", error);
+
+            res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
+    async function rejectRegistration(req, res) {
+        try {
+            const registration = await Registration.findById(req.params.id).populate("projectReference");
+
+            if (!registration) {
+                return res.status(404).json({
+                    message: "Registration not found"
+                });
+            }
+
+            if (registration.projectReference.developer.toString() !== req.user.id) {
+                return res.status(403).json({
+                    message: "You are not the developer of this project"
+                });
+            }
+
+            registration.registrationStatus = "rejected";
+            await registration.save();
+
+            res.status(200).json({ rejectedRegistration: registration });
+        } catch (error) {
+            console.error("Error rejecting registration:", error);
+
+            res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
+
+module.exports = { 
+    createRegistration, 
+    getMyRegistrations, 
+    getProjectRegistrations, 
+    deleteRegistration, 
+    approveRegistration, 
+    rejectRegistration };
