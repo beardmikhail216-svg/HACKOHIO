@@ -24,7 +24,9 @@ router.get("/:userId", async (req, res) => {
         }
 
         // 2. Find all available projects
-        const projects = await Project.find().lean();
+        const projects = await Project.find({
+    developer: { $ne: user._id }
+}).lean();
 
         // 3. Calculate compatibility scores
         const recommendations = rankProjects(user, projects);
