@@ -2,18 +2,16 @@
 const express = require("express");
 const router = express.Router();
 
-// Import the MongoDB models
+const requireAuth = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const Project = require("../models/Project");
-
-// Import existing algorithm
 const { rankProjects } = require("../services/matchingService");
 
-// GET /api/recommendations/:userId
-router.get("/:userId", async (req, res) => {
+// GET /api/recommendations
+router.get("/", requireAuth, async (req, res) => {
     try {
-        // 1. Find the student in MongoDB
-        const user = await User.findById(req.params.userId)
+        // Find the currently logged-in user using their session.
+        const user = await User.findById(req.user.id)
             .select("-password")
             .lean();
 
@@ -23,21 +21,19 @@ router.get("/:userId", async (req, res) => {
             });
         }
 
-        // 2. Find all available projects
+        // Exclude projects created by the current user.
         const projects = await Project.find({
-    developer: { $ne: user._id }
-}).lean();
+            developer: { $ne: user._id }
+        }).lean();
 
-        // 3. Calculate compatibility scores
+        // Calculate and return ranked recommendations.
         const recommendations = rankProjects(user, projects);
 
-        // 4. Send the ranked projects to the frontend
-        res.json(recommendations);
-
+        return res.status(200).json(recommendations);
     } catch (error) {
-        console.error(error);
+        console.error("Error generating recommendations:", error);
 
-        res.status(500).json({
+        return res.status(500).json({
             message: "Failed to generate recommendations"
         });
     }

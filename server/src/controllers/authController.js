@@ -92,7 +92,7 @@ const login = async (req, res) => {
             });
         }
 
-        res.session.regenerate((err) => {
+        req.session.regenerate((err) => {
             if (err) {
                 console.error("Error regenerating session:", err);
                 return res.status(500).json({
@@ -101,9 +101,17 @@ const login = async (req, res) => {
             }
         });
 
-        req.session.userId = user._id;
+        req.session.userId = user._id.toString();
 
-        res.status(200).json({
+        req.session.save((err) => {
+        if (err) {
+            console.error("Error saving session:", err);
+            return res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+
+        return res.status(200).json({
             message: "Login successful",
             user: {
                 id: user._id,
@@ -112,6 +120,7 @@ const login = async (req, res) => {
                 role: user.role
             }
         });
+    });
     } catch (error) {
         console.error("Error logging in user:", error);
 

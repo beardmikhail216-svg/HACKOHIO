@@ -42,13 +42,13 @@ function calculateMatch(user, project) {
             weight: WEIGHTS.interests
         },
         {
-            userSkills : user.languages,
+            userSkills: user.languages,
             projectSkills: project.languages,
             weight: WEIGHTS.languages
         },
         {
             userSkills: user.frameworks,
-            projectSKills: project.frameworks,
+            projectSkills: project.frameworks,
             weight: WEIGHTS.frameworks
         },
         {
@@ -67,18 +67,17 @@ function calculateMatch(user, project) {
             category.projectSkills
         );
 
-        //ignore categories the project does not specify.
         if (ratio !== null) {
             weightedScore += ratio * category.weight;
             totalWeight += category.weight;
         }
-
-        if (totalWeight === 0) {
-            return 0;
-        }
-
-        return Math.round((weightedScore / totalWeight) * 100);
     }
+
+    if (totalWeight === 0) {
+        return 0;
+    }
+
+    return Math.round((weightedScore / totalWeight) * 100);
 }
 
 //rank all projectes from highest to lowest compatibility.

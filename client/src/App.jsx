@@ -1,95 +1,72 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
+import AuthPage from "./pages/AuthPage";
+import {
+  getCurrentUser,
+  logout,
+} from "./services/authService";
 
 function App() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [user, setUser] = useState(null);
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  const [formData, setFormData] = useState({
-    userName: "",
-    email: "",
-    password: "",
-  });
+  useEffect(() => {
+    getCurrentUser()
+      .then(({ data }) => {
+        setUser(data.user);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => {
+        setCheckingSession(false);
+      });
+  }, []);
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  if (checkingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        Checking your session...
+      </div>
+    );
+  }
 
-    console.log(formData);
-
-    // TODO:
-    // Register API call
-    // Login API call
-  };
+  if (!user) {
+    return <AuthPage onAuthSuccess={setUser} />;
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-800">
-        <h1 className="text-3xl font-bold text-white text-center mb-2">
-          ProjectHub
-        </h1>
-
-        <p className="text-slate-400 text-center mb-8">
-          {isLogin
-            ? "Sign in to your account"
-            : "Create your account"}
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <input
-              type="text"
-              name="userName"
-              placeholder="Username"
-              value={formData.userName}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white"
-              required
-            />
-          )}
-
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white"
-            required
-          />
-
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white"
-            required
-          />
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
-          >
-            {isLogin ? "Login" : "Register"}
-          </button>
-        </form>
+    <main className="min-h-screen bg-slate-950 p-8 text-white">
+      <header className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">ProjectHub</h1>
 
         <button
-          onClick={() => setIsLogin(!isLogin)}
-          className="w-full mt-6 text-blue-400 hover:text-blue-300"
+          onClick={handleLogout}
+          className="rounded-lg bg-red-600 px-4 py-2 hover:bg-red-500"
         >
-          {isLogin
-            ? "Need an account? Register"
-            : "Already have an account? Login"}
+          Log out
         </button>
-      </div>
-    </div>
+      </header>
+
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold">
+          Welcome, {user.userName}!
+        </h2>
+
+        <p className="mt-2 text-slate-400">
+          Your ProjectHub dashboard will go here.
+        </p>
+      </section>
+    </main>
   );
 }
 
