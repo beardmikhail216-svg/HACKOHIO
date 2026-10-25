@@ -55,7 +55,6 @@ function ProjectDetailPage({ user }) {
           getProjectRegistrations(projectId),
         ]);
 
-      // Supports APIs that return either { project } or the project directly.
       const projectData =
         projectResult.data?.project ?? projectResult.data;
 
@@ -64,20 +63,26 @@ function ProjectDetailPage({ user }) {
       }
 
       setProject(projectData);
+
       setMyRegistrations(
         Array.isArray(myResult.data) ? myResult.data : []
       );
+
       setRegistrations(
         Array.isArray(registrationsResult.data)
           ? registrationsResult.data
           : []
       );
+
+      return true;
     } catch (error) {
       setPageError(
         error.response?.data?.message ||
           error.message ||
           "Could not load this project."
       );
+
+      return false;
     } finally {
       setLoading(false);
     }
@@ -117,8 +122,16 @@ function ProjectDetailPage({ user }) {
 
     try {
       await action();
-      await loadDetails();
-      setNotice(successMessage);
+
+      const refreshed = await loadDetails();
+
+      if (refreshed) {
+        setNotice(successMessage);
+      } else {
+        setPageError(
+          "The action may have succeeded, but the page could not refresh. Please reload."
+        );
+      }
     } catch (error) {
       setPageError(
         error.response?.data?.message ||
@@ -185,6 +198,7 @@ function ProjectDetailPage({ user }) {
         <p role="alert" className="text-red-700">
           {pageError || "Project not found."}
         </p>
+
         <Link to="/" className="text-blue-700 hover:underline">
           ← Back to projects
         </Link>
@@ -193,9 +207,16 @@ function ProjectDetailPage({ user }) {
   }
 
   const developer =
-    typeof project.developer === "object"
+    project.developer && typeof project.developer === "object"
       ? project.developer
       : null;
+
+  const technologyGroups = [
+    ["Languages", project.languages],
+    ["Frameworks", project.frameworks],
+    ["Databases", project.databases],
+    ["Topics", project.topics],
+  ];
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-6">
@@ -230,9 +251,11 @@ function ProjectDetailPage({ user }) {
             <p className="text-sm font-medium uppercase tracking-wide text-blue-700">
               Project details
             </p>
+
             <h1 className="mt-2 text-3xl font-bold">
               {project.title}
             </h1>
+
             <p className="mt-2 text-sm text-gray-500">
               Created by{" "}
               {developer?.userName ||
@@ -248,7 +271,10 @@ function ProjectDetailPage({ user }) {
         </div>
 
         <div className="mt-6">
-          <h2 className="text-lg font-semibold">About this project</h2>
+          <h2 className="text-lg font-semibold">
+            About this project
+          </h2>
+
           <p className="mt-2 whitespace-pre-wrap leading-7 text-gray-700">
             {Array.isArray(project.description)
               ? project.description.join("\n")
@@ -257,19 +283,15 @@ function ProjectDetailPage({ user }) {
         </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          {[
-            ["Languages", project.languages],
-            ["Frameworks", project.frameworks],
-            ["Databases", project.databases],
-            ["Topics", project.topics],
-          ].map(([label, values]) => (
+          {technologyGroups.map(([label, values]) => (
             <div key={label}>
               <h3 className="font-semibold">{label}</h3>
-              {values?.length ? (
+
+              {Array.isArray(values) && values.length > 0 ? (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {values.map((value) => (
+                  {values.map((value, index) => (
                     <span
-                      key={value}
+                      key={`${value}-${index}`}
                       className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
                     >
                       {value}
@@ -341,6 +363,7 @@ function ProjectDetailPage({ user }) {
         <h2 className="text-2xl font-bold">
           Participants ({participants.length})
         </h2>
+
         <p className="mt-1 text-sm text-gray-600">
           Approved members of this project.
         </p>
@@ -360,7 +383,7 @@ function ProjectDetailPage({ user }) {
                   className="rounded-xl border p-4"
                 >
                   <h3 className="font-semibold">
-                    {participant.userName}
+                    {participant.userName || "Project participant"}
                   </h3>
 
                   {participant.languages?.length > 0 && (

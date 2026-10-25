@@ -6,6 +6,9 @@ const config = { withCredentials: true };
 export const getProjects = () =>
   axios.get(API, config);
 
+export const getProject = (projectId) =>
+  axios.get(`${API}/${projectId}`, config);
+
 export const createProject = (projectData) =>
   axios.post(API, projectData, config);
 
