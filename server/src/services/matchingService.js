@@ -34,6 +34,65 @@ function getMatchRatio(userSkills, projectSkills) {
     return matches / requirements.length;    
 }
 
+function getMatchingItems(userItems, projectItems) {
+    const userSet = new Set(
+        (Array.isArray(userItems) ? userItems : [])
+            .map(item => item.trim().toLowerCase())
+    );
+
+    return (Array.isArray(projectItems) ? projectItems : [])
+        .filter(item => userSet.has(item.trim().toLowerCase()));
+}
+
+function getMissingItems(userItems, projectItems) {
+    const userSet = new Set(
+        (Array.isArray(userItems) ? userItems : [])
+            .map(item => item.trim().toLowerCase())
+    );
+
+    return (Array.isArray(projectItems) ? projectItems : [])
+        .filter(item => !userSet.has(item.trim().toLowerCase()));
+}
+
+function getMatchDetails(user, project) {
+    return {
+        sharedTopics: getMatchingItems(
+            user.interests,
+            project.topics
+        ),
+
+        sharedLanguages: getMatchingItems(
+            user.languages,
+            project.languages
+        ),
+
+        sharedFrameworks: getMatchingItems(
+            user.frameworks,
+            project.frameworks
+        ),
+
+        sharedDatabases: getMatchingItems(
+            user.databases,
+            project.databases
+        ),
+
+        newLanguages: getMissingItems(
+            user.languages,
+            project.languages
+        ),
+
+        newFrameworks: getMissingItems(
+            user.frameworks,
+            project.frameworks
+        ),
+
+        newDatabases: getMissingItems(
+            user.databases,
+            project.databases
+        )
+    };
+}
+
 function calculateMatch(user, project) {
     const categories = [
         {
@@ -85,18 +144,22 @@ function rankProjects(user, projects) {
     const rankedProjects = projects.map(project => {
         return {
             ...project,
-            matchScore: calculateMatch(user, project)
+            matchScore: calculateMatch(user, project),
+            matchDetails: getMatchDetails(user, project)
         };
     });
 
     rankedProjects.sort((a, b) => b.matchScore - a.matchScore);
 
-    return rankedProjects; 
+    return rankedProjects;
 }
 
 module.exports = {
     getMatchRatio,
     calculateMatch,
+    getMatchingItems,
+    getMissingItems,
+    getMatchDetails,
     rankProjects
 };
 

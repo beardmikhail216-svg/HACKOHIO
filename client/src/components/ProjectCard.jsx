@@ -1,4 +1,18 @@
 function ProjectCard({ project }) {
+    const details = project.matchDetails;
+
+    const sharedSkills = [
+        ...(details?.sharedLanguages || []),
+        ...(details?.sharedFrameworks || []),
+        ...(details?.sharedDatabases || [])
+    ];
+
+    const newSkills = [
+        ...(details?.newLanguages || []),
+        ...(details?.newFrameworks || []),
+        ...(details?.newDatabases || [])
+    ];
+
     return (
         <div className="rounded-xl border p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
@@ -38,6 +52,48 @@ function ProjectCard({ project }) {
                     {project.topics?.join(", ") || "None"}
                 </p>
             </div>
+            {details && (
+                <div className="mt-4 border-t pt-4 text-sm">
+
+                    <h3 className="font-semibold text-gray-800">
+                        {details.sharedTopics?.length > 0 ||
+                            sharedSkills.length > 0
+                            ? "Why this matches you"
+                            : "Explore something new"}
+                    </h3>
+
+                    {details.sharedTopics?.length > 0 && (
+                        <p className="mt-2 text-green-700">
+                            Matching interests:{" "}
+                            {details.sharedTopics.join(", ")}
+                        </p>
+                    )}
+
+                    {sharedSkills.length > 0 && (
+                        <p className="mt-2 text-green-700">
+                            Skills you already know:{" "}
+                            {sharedSkills.join(", ")}
+                        </p>
+                    )}
+
+                    {newSkills.length > 0 && (
+                        <p className="mt-2 text-blue-700">
+                            Potential skills to explore:{" "}
+                            {newSkills.join(", ")}
+                        </p>
+                    )}
+
+                    {details.sharedTopics?.length === 0 &&
+                        sharedSkills.length === 0 && (
+                            <p className="mt-2 text-gray-500">
+                                This project could introduce you
+                                to new topics and technologies.
+                            </p>
+                        )}
+
+                </div>
+            )}
+
         </div>
     );
 }
