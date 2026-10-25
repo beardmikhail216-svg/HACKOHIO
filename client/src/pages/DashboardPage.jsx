@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import ProjectForm from "../components/ProjectForm";
+import RecommendationsPage from "./RecommendationsPage";
 
 import {
   getProjects,
@@ -29,6 +30,7 @@ function DashboardPage({ user }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionLoading, setActionLoading] = useState({});
+  const [activeTab, setActiveTab] = useState("all");
 
   const userId = user?._id ?? user?.id;
 
@@ -86,7 +88,7 @@ function DashboardPage({ user }) {
     } catch (error) {
       setPageError(
         error.response?.data?.message ||
-          "Could not load projects and registrations. Please try again."
+        "Could not load projects and registrations. Please try again."
       );
     } finally {
       setLoading(false);
@@ -125,7 +127,7 @@ function DashboardPage({ user }) {
     } catch (error) {
       setPageError(
         error.response?.data?.message ||
-          "The registration action failed. Please try again."
+        "The registration action failed. Please try again."
       );
     } finally {
       setActionLoading((current) => ({
@@ -146,7 +148,7 @@ function DashboardPage({ user }) {
     } catch (error) {
       setPageError(
         error.response?.data?.message ||
-          "Could not create the project."
+        "Could not create the project."
       );
     } finally {
       setSaving(false);
@@ -166,7 +168,7 @@ function DashboardPage({ user }) {
     } catch (error) {
       setPageError(
         error.response?.data?.message ||
-          "Could not update the project."
+        "Could not update the project."
       );
     } finally {
       setSaving(false);
@@ -192,7 +194,7 @@ function DashboardPage({ user }) {
     } catch (error) {
       setPageError(
         error.response?.data?.message ||
-          "Could not delete this project."
+        "Could not delete this project."
       );
     }
   };
@@ -230,8 +232,7 @@ function DashboardPage({ user }) {
 
   const handleReject = (registration, project) => {
     const confirmed = window.confirm(
-      `Reject ${
-        registration.userReference?.userName || "this applicant"
+      `Reject ${registration.userReference?.userName || "this applicant"
       } for "${project.title}"?`
     );
 
@@ -240,8 +241,7 @@ function DashboardPage({ user }) {
     return runRegistrationAction(
       `reject-${registration._id}`,
       () => rejectRegistration(registration._id),
-      `Rejected ${
-        registration.userReference?.userName || "applicant"
+      `Rejected ${registration.userReference?.userName || "applicant"
       }.`
     );
   };
@@ -274,6 +274,33 @@ function DashboardPage({ user }) {
           </button>
         )}
       </header>
+
+
+      <nav className="flex gap-3 border-b pb-3" aria-label="Project views">
+        <button
+          type="button"
+          onClick={() => setActiveTab("all")}
+          aria-pressed={activeTab === "all"}
+          className={`rounded-lg px-4 py-2 ${activeTab === "all"
+              ? "bg-blue-600 text-white"
+              : "border"
+            }`}
+        >
+          All Projects
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("recommended")}
+          aria-pressed={activeTab === "recommended"}
+          className={`rounded-lg px-4 py-2 ${activeTab === "recommended"
+              ? "bg-blue-600 text-white"
+              : "border"
+            }`}
+        >
+          Recommended
+        </button>
+      </nav>
 
       {pageError && (
         <p
@@ -318,329 +345,334 @@ function DashboardPage({ user }) {
         </section>
       )}
 
-      <section>
-        <h2 className="mb-4 text-2xl font-semibold">
-          Available projects
-        </h2>
+      {activeTab === "all" ? (
+        <section>
+          <h2 className="mb-4 text-2xl font-semibold">
+            Available projects
+          </h2>
 
-        {projects.length === 0 ? (
-          <p className="rounded-xl border border-dashed p-8 text-center text-gray-600">
-            No projects yet. Create the first one!
-          </p>
-        ) : (
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => {
-              const owner = isOwner(project);
-              const myRegistration = getMyRegistration(project._id);
-              const registrations =
-                projectRegistrations[project._id] ?? [];
+          {projects.length === 0 ? (
+            <p className="rounded-xl border border-dashed p-8 text-center text-gray-600">
+              No projects yet. Create the first one!
+            </p>
+          ) : (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {projects.map((project) => {
+                const owner = isOwner(project);
+                const myRegistration = getMyRegistration(project._id);
+                const registrations =
+                  projectRegistrations[project._id] ?? [];
 
-              const participants = registrations.filter(
-                (registration) =>
-                  registration.registrationStatus === "approved" &&
-                  registration.userReference
-              );
+                const participants = registrations.filter(
+                  (registration) =>
+                    registration.registrationStatus === "approved" &&
+                    registration.userReference
+                );
 
-              const pendingApplicants = owner
-                ? registrations.filter(
+                const pendingApplicants = owner
+                  ? registrations.filter(
                     (registration) =>
                       registration.registrationStatus === "pending"
                   )
-                : [];
+                  : [];
 
-              const registrationKey = `register-${project._id}`;
-              const cancelKey = myRegistration
-                ? `cancel-${myRegistration._id}`
-                : "";
+                const registrationKey = `register-${project._id}`;
+                const cancelKey = myRegistration
+                  ? `cancel-${myRegistration._id}`
+                  : "";
 
-              return (
-                <article
-                  key={project._id}
-                  className="flex flex-col rounded-xl border p-5 shadow-sm"
-                >
-                  <h3 className="text-xl font-semibold">
-                    {project.title}
-                  </h3>
+                return (
+                  <article
+                    key={project._id}
+                    className="flex flex-col rounded-xl border p-5 shadow-sm"
+                  >
+                    <h3 className="text-xl font-semibold">
+                      {project.title}
+                    </h3>
 
-                  <p className="mt-2 flex-1 whitespace-pre-wrap text-gray-600">
-                    {Array.isArray(project.description)
-                      ? project.description.join("\n")
-                      : project.description}
-                  </p>
-
-                  <div className="mt-4 space-y-2 text-sm">
-                    {project.languages?.length > 0 && (
-                      <p>
-                        <strong>Languages:</strong>{" "}
-                        {project.languages.join(", ")}
-                      </p>
-                    )}
-
-                    {project.frameworks?.length > 0 && (
-                      <p>
-                        <strong>Frameworks:</strong>{" "}
-                        {project.frameworks.join(", ")}
-                      </p>
-                    )}
-
-                    {project.databases?.length > 0 && (
-                      <p>
-                        <strong>Databases:</strong>{" "}
-                        {project.databases.join(", ")}
-                      </p>
-                    )}
-
-                    {project.topics?.length > 0 && (
-                      <p>
-                        <strong>Topics:</strong>{" "}
-                        {project.topics.join(", ")}
-                      </p>
-                    )}
-
-                    <p>
-                      <strong>Registration:</strong>{" "}
-                      {project.registrationMode === "open"
-                        ? "Open registration"
-                        : "Requires approval"}
+                    <p className="mt-2 flex-1 whitespace-pre-wrap text-gray-600">
+                      {Array.isArray(project.description)
+                        ? project.description.join("\n")
+                        : project.description}
                     </p>
-                  </div>
 
-                  {/* Current user's registration */}
-                  {!owner && (
-                    <div className="mt-4 border-t pt-4">
-                      {!myRegistration ? (
-                        <button
-                          disabled={isActionLoading(registrationKey)}
-                          onClick={() => handleRegister(project)}
-                          className="w-full rounded-lg bg-blue-600 px-3 py-2 font-medium text-white disabled:opacity-50"
-                        >
-                          {isActionLoading(registrationKey)
-                            ? "Registering..."
-                            : "Register for project"}
-                        </button>
-                      ) : (
-                        <div className="space-y-2">
-                          <p className="text-sm">
-                            <strong>Your status:</strong>{" "}
-                            <span
-                              className={
-                                myRegistration.registrationStatus ===
-                                "approved"
-                                  ? "font-medium text-green-700"
-                                  : myRegistration.registrationStatus ===
-                                      "pending"
-                                    ? "font-medium text-amber-700"
-                                    : "font-medium text-red-700"
-                              }
-                            >
-                              {myRegistration.registrationStatus
-                                .charAt(0)
-                                .toUpperCase() +
-                                myRegistration.registrationStatus.slice(1)}
-                            </span>
-                          </p>
-
-                          <button
-                            disabled={isActionLoading(cancelKey)}
-                            onClick={() =>
-                              handleCancelRegistration(
-                                myRegistration,
-                                project
-                              )
-                            }
-                            className="w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-50"
-                          >
-                            {isActionLoading(cancelKey)
-                              ? "Removing..."
-                              : myRegistration.registrationStatus ===
-                                  "approved"
-                                ? "Leave project"
-                                : myRegistration.registrationStatus ===
-                                    "pending"
-                                  ? "Cancel request"
-                                  : "Remove rejected request"}
-                          </button>
-                        </div>
+                    <div className="mt-4 space-y-2 text-sm">
+                      {project.languages?.length > 0 && (
+                        <p>
+                          <strong>Languages:</strong>{" "}
+                          {project.languages.join(", ")}
+                        </p>
                       )}
-                    </div>
-                  )}
 
-                  {/* Approved participants visible to everyone */}
-                  <div className="mt-5 border-t pt-4">
-                    <h4 className="font-semibold">
-                      Participants ({participants.length})
-                    </h4>
+                      {project.frameworks?.length > 0 && (
+                        <p>
+                          <strong>Frameworks:</strong>{" "}
+                          {project.frameworks.join(", ")}
+                        </p>
+                      )}
 
-                    {participants.length === 0 ? (
-                      <p className="mt-2 text-sm text-gray-500">
-                        No approved participants yet.
+                      {project.databases?.length > 0 && (
+                        <p>
+                          <strong>Databases:</strong>{" "}
+                          {project.databases.join(", ")}
+                        </p>
+                      )}
+
+                      {project.topics?.length > 0 && (
+                        <p>
+                          <strong>Topics:</strong>{" "}
+                          {project.topics.join(", ")}
+                        </p>
+                      )}
+
+                      <p>
+                        <strong>Registration:</strong>{" "}
+                        {project.registrationMode === "open"
+                          ? "Open registration"
+                          : "Requires approval"}
                       </p>
-                    ) : (
-                      <ul className="mt-2 space-y-2">
-                        {participants.map((registration) => (
-                          <li
-                            key={registration._id}
-                            className="rounded-lg bg-gray-50 p-3"
+                    </div>
+
+                    {/* Current user's registration */}
+                    {!owner && (
+                      <div className="mt-4 border-t pt-4">
+                        {!myRegistration ? (
+                          <button
+                            disabled={isActionLoading(registrationKey)}
+                            onClick={() => handleRegister(project)}
+                            className="w-full rounded-lg bg-blue-600 px-3 py-2 font-medium text-white disabled:opacity-50"
                           >
-                            <p className="font-medium">
-                              {registration.userReference.userName}
+                            {isActionLoading(registrationKey)
+                              ? "Registering..."
+                              : "Register for project"}
+                          </button>
+                        ) : (
+                          <div className="space-y-2">
+                            <p className="text-sm">
+                              <strong>Your status:</strong>{" "}
+                              <span
+                                className={
+                                  myRegistration.registrationStatus ===
+                                    "approved"
+                                    ? "font-medium text-green-700"
+                                    : myRegistration.registrationStatus ===
+                                      "pending"
+                                      ? "font-medium text-amber-700"
+                                      : "font-medium text-red-700"
+                                }
+                              >
+                                {myRegistration.registrationStatus
+                                  .charAt(0)
+                                  .toUpperCase() +
+                                  myRegistration.registrationStatus.slice(1)}
+                              </span>
                             </p>
 
-                            {registration.userReference.languages
-                              ?.length > 0 && (
-                              <p className="mt-1 text-xs text-gray-600">
-                                Languages:{" "}
-                                {registration.userReference.languages.join(
-                                  ", "
-                                )}
-                              </p>
-                            )}
-
-                            {registration.userReference.frameworks
-                              ?.length > 0 && (
-                              <p className="mt-1 text-xs text-gray-600">
-                                Frameworks:{" "}
-                                {registration.userReference.frameworks.join(
-                                  ", "
-                                )}
-                              </p>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                            <button
+                              disabled={isActionLoading(cancelKey)}
+                              onClick={() =>
+                                handleCancelRegistration(
+                                  myRegistration,
+                                  project
+                                )
+                              }
+                              className="w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-50"
+                            >
+                              {isActionLoading(cancelKey)
+                                ? "Removing..."
+                                : myRegistration.registrationStatus ===
+                                  "approved"
+                                  ? "Leave project"
+                                  : myRegistration.registrationStatus ===
+                                    "pending"
+                                    ? "Cancel request"
+                                    : "Remove rejected request"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
-                  </div>
 
-                  {/* Owner-only applicant management */}
-                  {owner && (
+                    {/* Approved participants visible to everyone */}
                     <div className="mt-5 border-t pt-4">
                       <h4 className="font-semibold">
-                        Pending applicants ({pendingApplicants.length})
+                        Participants ({participants.length})
                       </h4>
 
-                      {pendingApplicants.length === 0 ? (
+                      {participants.length === 0 ? (
                         <p className="mt-2 text-sm text-gray-500">
-                          No pending applications.
+                          No approved participants yet.
                         </p>
                       ) : (
-                        <ul className="mt-3 space-y-3">
-                          {pendingApplicants.map((registration) => {
-                            const applicant =
-                              registration.userReference;
+                        <ul className="mt-2 space-y-2">
+                          {participants.map((registration) => (
+                            <li
+                              key={registration._id}
+                              className="rounded-lg bg-gray-50 p-3"
+                            >
+                              <p className="font-medium">
+                                {registration.userReference.userName}
+                              </p>
 
-                            return (
-                              <li
-                                key={registration._id}
-                                className="rounded-lg border p-3"
-                              >
-                                <p className="font-medium">
-                                  {applicant?.userName ||
-                                    "Unknown applicant"}
-                                </p>
-
-                                {applicant?.languages?.length > 0 && (
+                              {registration.userReference.languages
+                                ?.length > 0 && (
                                   <p className="mt-1 text-xs text-gray-600">
                                     Languages:{" "}
-                                    {applicant.languages.join(", ")}
+                                    {registration.userReference.languages.join(
+                                      ", "
+                                    )}
                                   </p>
                                 )}
 
-                                {applicant?.frameworks?.length > 0 && (
+                              {registration.userReference.frameworks
+                                ?.length > 0 && (
                                   <p className="mt-1 text-xs text-gray-600">
                                     Frameworks:{" "}
-                                    {applicant.frameworks.join(", ")}
+                                    {registration.userReference.frameworks.join(
+                                      ", "
+                                    )}
                                   </p>
                                 )}
-
-                                {applicant?.interests?.length > 0 && (
-                                  <p className="mt-1 text-xs text-gray-600">
-                                    Interests:{" "}
-                                    {applicant.interests.join(", ")}
-                                  </p>
-                                )}
-
-                                <div className="mt-3 flex gap-2">
-                                  <button
-                                    disabled={isActionLoading(
-                                      `approve-${registration._id}`
-                                    )}
-                                    onClick={() =>
-                                      handleApprove(
-                                        registration,
-                                        project
-                                      )
-                                    }
-                                    className="flex-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-                                  >
-                                    {isActionLoading(
-                                      `approve-${registration._id}`
-                                    )
-                                      ? "Approving..."
-                                      : "Approve"}
-                                  </button>
-
-                                  <button
-                                    disabled={isActionLoading(
-                                      `reject-${registration._id}`
-                                    )}
-                                    onClick={() =>
-                                      handleReject(
-                                        registration,
-                                        project
-                                      )
-                                    }
-                                    className="flex-1 rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 disabled:opacity-50"
-                                  >
-                                    {isActionLoading(
-                                      `reject-${registration._id}`
-                                    )
-                                      ? "Rejecting..."
-                                      : "Reject"}
-                                  </button>
-                                </div>
-                              </li>
-                            );
-                          })}
+                            </li>
+                          ))}
                         </ul>
                       )}
                     </div>
-                  )}
 
-                  {/* Existing project owner controls */}
-                  {owner && (
-                    <div className="mt-5 flex gap-3 border-t pt-4">
-                      <button
-                        onClick={() => {
-                          setShowForm(false);
-                          setEditingProject(project);
-                          setNotice("");
-                        }}
-                        className="rounded-lg border px-3 py-2"
-                      >
-                        Edit
-                      </button>
+                    {/* Owner-only applicant management */}
+                    {owner && (
+                      <div className="mt-5 border-t pt-4">
+                        <h4 className="font-semibold">
+                          Pending applicants ({pendingApplicants.length})
+                        </h4>
 
-                      <button
-                        onClick={() => handleDelete(project)}
-                        className="rounded-lg border border-red-300 px-3 py-2 text-red-700"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                  <Link
-                        to={`/projects/${project._id}`}
-                        className="mt-4 inline-flex items-center gap-2 font-medium text-blue-700 hover:underline"
+                        {pendingApplicants.length === 0 ? (
+                          <p className="mt-2 text-sm text-gray-500">
+                            No pending applications.
+                          </p>
+                        ) : (
+                          <ul className="mt-3 space-y-3">
+                            {pendingApplicants.map((registration) => {
+                              const applicant =
+                                registration.userReference;
+
+                              return (
+                                <li
+                                  key={registration._id}
+                                  className="rounded-lg border p-3"
+                                >
+                                  <p className="font-medium">
+                                    {applicant?.userName ||
+                                      "Unknown applicant"}
+                                  </p>
+
+                                  {applicant?.languages?.length > 0 && (
+                                    <p className="mt-1 text-xs text-gray-600">
+                                      Languages:{" "}
+                                      {applicant.languages.join(", ")}
+                                    </p>
+                                  )}
+
+                                  {applicant?.frameworks?.length > 0 && (
+                                    <p className="mt-1 text-xs text-gray-600">
+                                      Frameworks:{" "}
+                                      {applicant.frameworks.join(", ")}
+                                    </p>
+                                  )}
+
+                                  {applicant?.interests?.length > 0 && (
+                                    <p className="mt-1 text-xs text-gray-600">
+                                      Interests:{" "}
+                                      {applicant.interests.join(", ")}
+                                    </p>
+                                  )}
+
+                                  <div className="mt-3 flex gap-2">
+                                    <button
+                                      disabled={isActionLoading(
+                                        `approve-${registration._id}`
+                                      )}
+                                      onClick={() =>
+                                        handleApprove(
+                                          registration,
+                                          project
+                                        )
+                                      }
+                                      className="flex-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                                    >
+                                      {isActionLoading(
+                                        `approve-${registration._id}`
+                                      )
+                                        ? "Approving..."
+                                        : "Approve"}
+                                    </button>
+
+                                    <button
+                                      disabled={isActionLoading(
+                                        `reject-${registration._id}`
+                                      )}
+                                      onClick={() =>
+                                        handleReject(
+                                          registration,
+                                          project
+                                        )
+                                      }
+                                      className="flex-1 rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 disabled:opacity-50"
+                                    >
+                                      {isActionLoading(
+                                        `reject-${registration._id}`
+                                      )
+                                        ? "Rejecting..."
+                                        : "Reject"}
+                                    </button>
+                                  </div>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Existing project owner controls */}
+                    {owner && (
+                      <div className="mt-5 flex gap-3 border-t pt-4">
+                        <button
+                          onClick={() => {
+                            setShowForm(false);
+                            setEditingProject(project);
+                            setNotice("");
+                          }}
+                          className="rounded-lg border px-3 py-2"
                         >
-                        View project details
-                        <span aria-hidden="true">→</span>
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(project)}
+                          className="rounded-lg border border-red-300 px-3 py-2 text-red-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                    <Link
+                      to={`/projects/${project._id}`}
+                      className="mt-4 inline-flex items-center gap-2 font-medium text-blue-700 hover:underline"
+                    >
+                      View project details
+                      <span aria-hidden="true">→</span>
                     </Link>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      ) : (
+        <RecommendationsPage />
+      )}
+
     </main>
   );
 }
