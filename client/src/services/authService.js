@@ -18,4 +18,4 @@ export const getCurrentUser = () =>
   axios.get(`${API}/me`);
 
 export const updateProfile = (data) =>
-  axios.put(`${API}/profile`, data);
+  axios.put(`${API}/me`, data);
