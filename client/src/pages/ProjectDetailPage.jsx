@@ -384,6 +384,7 @@ function ProjectDetailPage({ user }) {
                 >
                   <h3 className="font-semibold">
                     {participant.userName || "Project participant"}
+                    {String(participant._id ?? participant.id) === String(user?._id ?? user?.id) && " (You)"}
                   </h3>
 
                   {participant.languages?.length > 0 && (
