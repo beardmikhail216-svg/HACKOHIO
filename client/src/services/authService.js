@@ -1,3 +1,4 @@
+
 import axios from "axios";
 
 const API = "http://localhost:5000/api/auth";
@@ -15,3 +16,6 @@ export const logout = () =>
 
 export const getCurrentUser = () =>
   axios.get(`${API}/me`);
+
+export const updateProfile = (data) =>
+  axios.put(`${API}/profile`, data);

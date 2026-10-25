@@ -59,7 +59,17 @@ const userSchema = new mongoose.Schema({
             "Robotics",
             "Embedded Systems",
             "Quantum Computing",
-        ], default: [] }
+        ], default: [] },
+    avatarIcon: {
+        type: String,
+        enum: ["user", "code", "rocket", "gamepad", "brain", "palette"],
+        default: "user",
+    },
+        avatarColor: {
+        type: String,
+        enum: ["blue", "purple", "green", "orange", "pink", "gray"],
+        default: "blue",
+    },
 },
 {
     timestamps: true

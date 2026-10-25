@@ -123,7 +123,13 @@ const login = async (req, res) => {
                         id: user._id,
                         userName: user.userName,
                         email: user.email,
-                        role: user.role
+                        role: user.role,
+                        languages: user.languages,
+                        frameworks: user.frameworks,
+                        databases: user.databases,
+                        interests: user.interests,
+                        avatarIcon: user.avatarIcon,
+                        avatarColor: user.avatarColor,
                     }
                 });
             });
@@ -176,7 +182,13 @@ const getCurrentUser = async (req, res) => {
                 id: user._id,
                 userName: user.userName,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                languages: user.languages,
+                frameworks: user.frameworks,
+                databases: user.databases,
+                interests: user.interests,
+                avatarIcon: user.avatarIcon,
+                avatarColor: user.avatarColor,
             }
         });
     } catch (error) {
@@ -188,4 +200,170 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
-module.exports = { register, login, logout, getCurrentUser };
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const {
+      userName,
+      email,
+      languages,
+      frameworks,
+      databases,
+      interests,
+      avatarIcon,
+      avatarColor,
+    } = req.body;
+
+    if (typeof userName !== "string" || !userName.trim()) {
+      return res.status(400).json({
+        message: "Username is required.",
+      });
+    }
+
+    if (typeof email !== "string" || !email.trim()) {
+      return res.status(400).json({
+        message: "Email is required.",
+      });
+    }
+
+    const normalizedUserName = userName.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        message: "Enter a valid email address.",
+      });
+    }
+
+    const duplicate = await User.findOne({
+      _id: { $ne: user._id },
+      $or: [
+        { userName: normalizedUserName },
+        { email: normalizedEmail },
+      ],
+    });
+
+    if (duplicate) {
+      return res.status(409).json({
+        message: "That username or email is already in use.",
+      });
+    }
+
+    const allowedIcons = [
+      "user",
+      "code",
+      "rocket",
+      "gamepad",
+      "brain",
+      "palette",
+    ];
+
+    const allowedColors = [
+      "blue",
+      "purple",
+      "green",
+      "orange",
+      "pink",
+      "gray",
+    ];
+
+    const validateArray = (value, fieldName) => {
+      if (value === undefined) return true;
+
+      if (
+        !Array.isArray(value) ||
+        !value.every((item) => typeof item === "string")
+      ) {
+        return false;
+      }
+
+      return true;
+    };
+
+    for (const [value, fieldName] of [
+      [languages, "languages"],
+      [frameworks, "frameworks"],
+      [databases, "databases"],
+      [interests, "interests"],
+    ]) {
+      if (!validateArray(value, fieldName)) {
+        return res.status(400).json({
+          message: `${fieldName} must be an array of strings.`,
+        });
+      }
+    }
+
+    if (
+      avatarIcon !== undefined &&
+      !allowedIcons.includes(avatarIcon)
+    ) {
+      return res.status(400).json({
+        message: "Invalid avatar icon.",
+      });
+    }
+
+    if (
+      avatarColor !== undefined &&
+      !allowedColors.includes(avatarColor)
+    ) {
+      return res.status(400).json({
+        message: "Invalid avatar color.",
+      });
+    }
+
+    user.userName = normalizedUserName;
+    user.email = normalizedEmail;
+
+    if (languages !== undefined) user.languages = languages;
+    if (frameworks !== undefined) user.frameworks = frameworks;
+    if (databases !== undefined) user.databases = databases;
+    if (interests !== undefined) user.interests = interests;
+    if (avatarIcon !== undefined) user.avatarIcon = avatarIcon;
+    if (avatarColor !== undefined) user.avatarColor = avatarColor;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Profile updated successfully.",
+      user: {
+        id: user._id,
+        userName: user.userName,
+        email: user.email,
+        role: user.role,
+        languages: user.languages,
+        frameworks: user.frameworks,
+        databases: user.databases,
+        interests: user.interests,
+        avatarIcon: user.avatarIcon,
+        avatarColor: user.avatarColor,
+      },
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "That username or email is already in use.",
+      });
+    }
+
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
+
+    console.error("Error updating profile:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+module.exports = { register, login, logout, getCurrentUser, updateProfile };
