@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function ProjectCard({ project }) {
     const details = project.matchDetails;
 
@@ -21,7 +23,7 @@ function ProjectCard({ project }) {
                 : "bg-gray-100 text-gray-700";
 
     return (
-        <div className="rounded-xl border p-5 shadow-sm">
+        <div className="flex h-full flex-col rounded-xl border p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
                 <h2 className="min-w-0 text-xl font-semibold">
                     {project.title}
@@ -98,9 +100,16 @@ function ProjectCard({ project }) {
                                 Explore this project to discover something new.
                             </p>
                         )}
-
                 </div>
             )}
+
+            <Link
+                to={`/projects/${project._id}`}
+                className="mt-auto inline-flex items-center gap-2 pt-4 font-medium text-blue-700 hover:underline"
+            >
+                View project details
+                <span aria-hidden="true">→</span>
+            </Link>
 
         </div>
     );
