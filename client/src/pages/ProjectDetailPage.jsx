@@ -58,6 +58,9 @@ function ProjectDetailPage({ user }) {
       const projectData =
         projectResult.data?.project ?? projectResult.data;
 
+        console.log("proj", projectData);
+        console.log("dev:", projectData.developer);
+
       if (!projectData?._id) {
         throw new Error("Project not found.");
       }
@@ -257,9 +260,17 @@ function ProjectDetailPage({ user }) {
             </h1>
 
             <p className="mt-2 text-sm text-gray-500">
-              Created by{" "}
-              {developer?.userName ||
-                (owner ? user?.userName : "Project owner")}
+                Created by{" "}
+                {developer?._id ? (
+                    <Link
+                    to={`/users/${developer._id}`}
+                    className="font-medium text-blue-600 hover:underline"
+                    >
+                    {developer.userName || "Project owner"}
+                    </Link>
+                ) : (
+                    owner ? user?.userName : "Project owner"
+                )}
             </p>
           </div>
 

@@ -15,7 +15,7 @@ async function getProjects(req, res) {
 
 async function getProjectById(req,res) {
     try {
-        const project = await Project.findById(req.params.id);
+        const project = await Project.findById(req.params.id).populate("developer", "userName");
 
         if (!project) {
             return res.status(404).json({
