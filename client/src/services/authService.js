@@ -19,3 +19,6 @@ export const getCurrentUser = () =>
 
 export const updateProfile = (data) =>
   axios.put(`${API}/me`, data);
+
+export const getUserProfile = (userId) =>
+    axios.get(`${API}/${userId}`);

@@ -383,9 +383,16 @@ function ProjectDetailPage({ user }) {
                   className="rounded-xl border p-4"
                 >
                   <h3 className="font-semibold">
-                    {participant.userName || "Project participant"}
-                    {String(participant._id ?? participant.id) === String(user?._id ?? user?.id) && " (You)"}
-                  </h3>
+                    <Link
+                        to={`/users/${participant._id ?? participant.id}`}
+                        className="text-blue-600 hover:underline"
+                    >
+                        {participant.userName || "Project participant"}
+                    </Link>
+
+                    {String(participant._id ?? participant.id) === String(userId) &&
+                        " (you)"}
+                </h3>
 
                   {participant.languages?.length > 0 && (
                     <p className="mt-2 text-sm text-gray-600">

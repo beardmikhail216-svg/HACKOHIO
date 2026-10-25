@@ -365,5 +365,30 @@ const updateProfile = async (req, res) => {
     });
   }
 };
+const getUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId).select(
+            "userName languages frameworks databases interests avatarIcon avatarColor"
+        );
 
-module.exports = { register, login, logout, getCurrentUser, updateProfile };
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.json({ user });
+    } catch (error) {
+        if (error.name === "CastError") {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(500).json({
+            message: "Failed to load user profile"
+        });
+    }
+};
+
+module.exports = { register, login, logout, getCurrentUser, updateProfile, getUserProfile };

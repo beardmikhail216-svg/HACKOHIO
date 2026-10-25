@@ -18,6 +18,8 @@ import {
   logout,
 } from "./services/authService";
 
+import UserProfilePage from "./pages/UserProfilePage";
+
 const AVATARS = {
   user: "👤",
   code: "💻",
@@ -181,6 +183,10 @@ function AppContent() {
         <Route
           path="*"
           element={<Navigate to="/" replace />}
+        />
+        <Route
+          path="/users/:userId"
+          element={<UserProfilePage user={user} />}
         />
       </Routes>
     </div>
