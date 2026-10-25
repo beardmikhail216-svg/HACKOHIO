@@ -1,4 +1,4 @@
-
+import { Link } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import ProjectForm from "../components/ProjectForm";
 
@@ -628,6 +628,13 @@ function DashboardPage({ user }) {
                       </button>
                     </div>
                   )}
+                  <Link
+                        to={`/projects/${project._id}`}
+                        className="mt-4 inline-flex items-center gap-2 font-medium text-blue-700 hover:underline"
+                        >
+                        View project details
+                        <span aria-hidden="true">→</span>
+                    </Link>
                 </article>
               );
             })}

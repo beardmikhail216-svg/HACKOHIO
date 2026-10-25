@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   BrowserRouter,
   Navigate,
@@ -55,10 +56,9 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex items-center justify-between gap-4 border-b bg-white p-4">
-        <a href="/" className="text-xl font-bold text-blue-700">
+        <Link to="/" className="text-xl font-bold text-blue-700">
           ProjectHub
-        </a>
-
+        </Link>
         <div className="flex items-center gap-4">
           {logoutError && (
             <p role="alert" className="text-sm text-red-600">
