@@ -13,14 +13,22 @@ function ProjectCard({ project }) {
         ...(details?.newDatabases || [])
     ];
 
+    const scoreColor =
+        project.matchScore >= 70
+            ? "bg-green-100 text-green-800"
+            : project.matchScore >= 40
+                ? "bg-yellow-100 text-yellow-800"
+                : "bg-gray-100 text-gray-700";
+
     return (
         <div className="rounded-xl border p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xl font-semibold">
+                <h2 className="min-w-0 text-xl font-semibold">
                     {project.title}
                 </h2>
-
-                <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800">
+                <span
+                    className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold ${scoreColor}`}
+                >
                     {project.matchScore}% Match
                 </span>
             </div>
@@ -63,31 +71,31 @@ function ProjectCard({ project }) {
                     </h3>
 
                     {details.sharedTopics?.length > 0 && (
-                        <p className="mt-2 text-green-700">
+                        <p className="mt-2 text-gray-700">
                             Matching interests:{" "}
                             {details.sharedTopics.join(", ")}
                         </p>
                     )}
 
                     {sharedSkills.length > 0 && (
-                        <p className="mt-2 text-green-700">
+                        <p className="mt-2 text-gray-700">
                             Skills you already know:{" "}
                             {sharedSkills.join(", ")}
                         </p>
                     )}
 
                     {newSkills.length > 0 && (
-                        <p className="mt-2 text-blue-700">
+                        <p className="mt-2 text-gray-700">
                             Potential skills to explore:{" "}
                             {newSkills.join(", ")}
                         </p>
                     )}
 
                     {details.sharedTopics?.length === 0 &&
-                        sharedSkills.length === 0 && (
-                            <p className="mt-2 text-gray-500">
-                                This project could introduce you
-                                to new topics and technologies.
+                        sharedSkills.length === 0 &&
+                        newSkills.length === 0 && (
+                            <p className="mt-2 text-gray-700">
+                                Explore this project to discover something new.
                             </p>
                         )}
 
