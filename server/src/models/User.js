@@ -70,6 +70,16 @@ const userSchema = new mongoose.Schema({
         enum: ["blue", "purple", "green", "orange", "pink", "gray"],
         default: "blue",
     },
+    linkedin: {
+    type: String,
+    trim: true,
+    default: ""
+    },
+    github: {
+        type: String,
+        trim: true,
+        default: ""
+    },
 },
 {
     timestamps: true

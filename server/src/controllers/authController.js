@@ -166,9 +166,6 @@ const getCurrentUser = async (req, res) => {
         const user = await User.findById(req.session.userId).select("-password");
         // ^ .select("-password") to prevent password from being included in the response
         if (!user) {
-            // return res.status(404).json({
-            //     message: "User not found"
-            // });
             return req.session.destroy(() => {
                 res.clearCookie("connect.sid");
                 res.status(401).json({
@@ -189,6 +186,8 @@ const getCurrentUser = async (req, res) => {
                 interests: user.interests,
                 avatarIcon: user.avatarIcon,
                 avatarColor: user.avatarColor,
+                linkedin: user.linkedin,
+                github: user.github,
             }
         });
     } catch (error) {
@@ -219,6 +218,8 @@ const updateProfile = async (req, res) => {
       interests,
       avatarIcon,
       avatarColor,
+      linkedin,
+      github,
     } = req.body;
 
     if (typeof userName !== "string" || !userName.trim()) {
@@ -286,7 +287,17 @@ const updateProfile = async (req, res) => {
 
       return true;
     };
+    if (linkedin !== undefined && typeof linkedin !== "string") {
+      return res.status(400).json({
+        message: "LinkedIn must be a string.",
+      });
+    }
 
+    if (github !== undefined && typeof github !== "string") {
+      return res.status(400).json({
+        message: "GitHub must be a string.",
+      });
+    }
     for (const [value, fieldName] of [
       [languages, "languages"],
       [frameworks, "frameworks"],
@@ -327,6 +338,8 @@ const updateProfile = async (req, res) => {
     if (interests !== undefined) user.interests = interests;
     if (avatarIcon !== undefined) user.avatarIcon = avatarIcon;
     if (avatarColor !== undefined) user.avatarColor = avatarColor;
+    if (linkedin !== undefined) user.linkedin = linkedin;
+    if (github !== undefined) user.github = github;
 
     await user.save();
 
@@ -343,6 +356,8 @@ const updateProfile = async (req, res) => {
         interests: user.interests,
         avatarIcon: user.avatarIcon,
         avatarColor: user.avatarColor,
+        linkedin: user.linkedin,
+        github: user.github,
       },
     });
   } catch (error) {
@@ -368,7 +383,7 @@ const updateProfile = async (req, res) => {
 const getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId).select(
-            "userName languages frameworks databases interests avatarIcon avatarColor"
+            "userName languages frameworks databases interests avatarIcon avatarColor linkedin github"
         );
 
         if (!user) {

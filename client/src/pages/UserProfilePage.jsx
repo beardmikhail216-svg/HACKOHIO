@@ -122,6 +122,43 @@ export default function UserProfilePage() {
                     <p className="text-gray-500">ProjectHub member</p>
                 </div>
             </section>
+            
+            <section className="rounded-xl border bg-white p-5">
+                <h2 className="mb-3 text-lg font-semibold">
+                    Connect
+                </h2>
+
+                <div className="flex flex-wrap gap-4">
+                    {profile.linkedin && (
+                        <a
+                            href={profile.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-blue-600 hover:underline"
+                        >
+                            LinkedIn ↗
+                        </a>
+                    )}
+
+                    {profile.github && (
+                        <a
+                            href={profile.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-gray-800 hover:underline"
+                        >
+                            GitHub ↗
+                        </a>
+                    )}
+
+                    {!profile.linkedin && !profile.github && (
+                        <p className="text-sm text-gray-500">
+                            No social links added yet.
+                        </p>
+                    )}
+                </div>
+            </section>
+
 
             <ProfileSection
                 title="Languages"
